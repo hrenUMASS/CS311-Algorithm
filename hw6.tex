@@ -1,0 +1,642 @@
+\documentclass{article}
+
+% \usepackage[noend]{algpseudocode}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\setlist{wide,labelwidth=!,labelindent=0pt,topsep=0pt}
+\usepackage{cprotect}
+\usepackage{listings}
+\usepackage{tikz-qtree}
+\usepackage[ruled,vlined]{algorithm2e}
+
+
+\tikzset{every tree node/.style={minimum width=.1in,draw,circle},
+         blank/.style={draw=none},
+         edge from parent/.style=
+         {draw,edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}},
+         level distance=5mm}
+
+\setlength{\headsep}{0.5 in}
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0mm}
+\addtolength\topmargin{-1cm}
+\textheight  9.4in
+\setlength{\interspacetitleruled}{-.45pt}
+
+\usepackage{amsmath,amsfonts,graphicx,multicol, color}
+\usepackage{graphicx,float}
+\usepackage[normalem]{ulem}
+\usepackage{tikz}
+
+\newcommand{\todo}{\textcolor{red}}
+\newcommand{\red}{\textcolor{red}}
+
+
+\usepackage{url}
+
+%\def\IsSolution{1}   % Uncomment to debug solutions. Note: Makefile generates both discussion and solution automatically.
+
+%
+% Define two macros
+%   \soln{}     --- contents appear only in solution
+%   \notsoln{}  --- contents appear only if not solution
+
+\usepackage{etoolbox}
+\ifx\IsSolution\undefined
+ \newcommand{\notsoln}[1]{#1}
+ \newcommand{\soln}[1]{}
+ \newcommand{\thesoln}[1]{}
+\else
+  \newcommand{\notsoln}[1]{}
+  \newcommand{\soln}[1]{#1}
+  \newcommand{\thesoln}[1]{{\color{red}\textbf{Solution:} #1}}
+\fi
+
+\newcommand{\Algorithm}{\textbf{Algorithm: }}
+\newcommand{\Intuition}{\textbf{Intuition: }}
+\newcommand{\Proof}{\textbf{Proof: }}
+\newcommand{\Complexity}{\textbf{Complexity: }}
+
+%
+% The following macro is used to generate the header.
+%
+\newcommand{\header}[1]{
+   \pagestyle{myheadings}
+   \thispagestyle{plain}
+   \newpage
+   \setcounter{page}{1}
+   \noindent
+   \begin{center}
+   \framebox{
+      \vbox{\vspace{2mm}
+    \hbox to 6.28in { {\bf COMPSCI 311: Introduction to Algorithms
+		\hfill Spring 2020} }
+       \vspace{2mm}
+       \hbox to 6.28in { {\Large \hfill Homework #1 \soln{Solutions} \hfill } }
+      \vspace{1mm}
+       \hbox to 6.28in { Released 4/16/2020 \hfill Due 4/29/2020 11:59pm in Gradescope}
+       \vspace{1mm}
+   }}
+   \end{center}
+   \markboth{Homework #1}{Homework #1}
+
+%   \vspace*{4mm}
+}
+
+\newcounter{problem}
+\newcommand{\prob}{\addtocounter{problem}{1}\noindent {\bf Problem \theproblem.} ~}
+
+\begin{document}
+\header{6}
+
+\textbf{Instructions.} You may work in groups, but you must write solutions yourself.
+List collaborators on your submission.   Also list any sources of help (including online
+sources) other than the textbook and course staff.
+
+If you are asked to design an algorithm, please provide: (a) the pseudocode or precise description in words of the algorithm, (b) an explanation of the intuition for the algorithm, (c) a proof of correctness, (d) the running time of your algorithm and (e) justification for your running time analysis. 
+
+%\medskip
+
+\textbf{Submissions.} Please submit a PDF file. You may submit a scanned handwritten document, but a typed submission is preferred. Please assign pages to questions in Gradescope.
+
+\medskip
+
+%\fbox{\textbf{Efficiency}. The algorithms you design should be polynomial-time, unless something else is stated.}
+  
+\begin{enumerate}[topsep=0pt,parsep=1mm]
+
+\item (20 points) \textbf{BoxDepth} 
+
+a) $R$ as the set of rectangles.
+
+\Algorithm
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+    
+    \SetKwFunction{FBoxDepth}{BoxDepth}
+    \SetKwFunction{FMaxClique}{MaxClique}
+    \SetKwFunction{FIntersects}{Intersects}
+    \SetKwProg{Fn}{Function}{:}{}
+    \Fn{\FBoxDepth{$R$}} {
+        $G\gets\emptyset$ as $(V,E)$ undirected\;
+        \For {$i=1$ to $n$} {
+            $V\gets V\cup R_i$\;
+        }
+        \For {$i=1$ to $n$} {
+            \For {$j=1$ to $n$} {
+                \If{$(i\neq j)\land$ \FIntersects{$R_i,R_j$}} {
+                    $E\gets E\cup (R_i,R_j)$\;
+                }
+            }
+        }
+        \Return \FMaxClique{$G$}
+    }
+    \Fn{\FIntersects}{$R_i,R_j$} {
+      $(l_i,b_i)\gets R_i.leftbottom$\;
+      $(l_j,b_j)\gets R_j.leftbottom$\;
+      $(r_i,t_i)\gets R_i.righttop$\;
+      $(r_j,t_j)\gets R_j.righttop$\;
+      \If{$(l_i<r_j)\land(l_j<r_i)\land(t_i>b_j)\land(t_j>b_i)$} {
+        \Return $False$
+      }
+      \Return $True$
+    } 
+\end{algorithm}
+
+\Intuition
+Take all the rectangles as the vertices, 
+and intersects as edges.
+Find max clique in this graph.
+
+\Proof
+Consider the definition of the problem, we want to find a common intersection point.
+Clearly, for all the rectangles that pass this point,
+they should pairly intersect with each other.
+
+Take $S(A,B)$ as $A$ intersects with $B$.
+
+This is a symmetric and transitive relation, 
+because $A$ intersects $B$ means $B$ intersects $A$,
+and because they pairly intersect each other,
+for any this kind set of rectangles ${R_1,...,R_n}$,
+we have $S(R_1,R_2),S(R_1,R_3),...S(R_{n-1},R_n)$, 
+for any intersection link $S(R_a,R_b),S(R_a,R_c)$, we can always find $S(R_a,R_c)$.
+Therefore, for a set of rectangles that intersects each other,
+they must share some common intersection point.
+
+In the algorithm, we take the rectangles as the vertices,
+and the intersections as edges.
+For the \textsc{MaxClique}, 
+we find the max number of vertices that are pairly connected with each other,
+same as described above, means they share a common intersection point.
+Therefore, this algorithm is correct.
+
+\Complexity
+This algorithm is $O(n^2)$ reduced to \textsc{MaxClique}, 
+because the main part is a nested loop with each $O(n)$ with intersects function $O(1)$, 
+so it is a polynomial-time reduction.
+
+
+b) 
+\textbf{Basic:}
+
+\Algorithm
+
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+
+  \SetKwFunction{FConstructSub}{ConstructSub}
+  \SetKwFunction{FBoxDepth}{BoxDepth}
+  \SetKwFunction{FArea}{Area}
+  \SetKwFunction{FHelper}{Helper}
+  \SetKwProg{Fn}{Function}{:}{}
+  \Fn{\FBoxDepth{$R$}} {
+    $max\_size\gets 0$\;
+    \For{$R_i\in R[1...n-1]$} {
+      
+    }
+  }
+
+  \Fn{\FHelper{$R,R',i,c$}} {
+    $c_{max}\gets c$\;
+    \For{$R_{j}\in R[i+1...n]$} {
+      $I\gets$\FConstructSub{$R',R_j$}\;
+      \If{\FArea{$I$}$>0$} {
+        $c_{max}\gets \max($\FHelper{$R,I,j,c+1$}$,c_{max})$
+      }
+    }
+    \Return $c_{max}$
+  }
+
+  \Fn{\FConstructSub{$R_i,R_j$}} {
+    $(l_i,b_i)\gets R_i.leftbottom$\;
+    $(l_j,b_j)\gets R_j.leftbottom$\;
+    $(r_i,t_i)\gets R_i.righttop$\;
+    $(r_j,t_j)\gets R_j.righttop$\;
+    \If{$(l_i<r_j)\land(l_j<r_i)\land(t_i>b_j)\land(t_j>b_i)$} {
+      $R\gets((0,0),(0,0))$
+    } \Else {
+      $l\gets max(l_i,l_j)$\;
+      $b\gets max(b_i,b_j)$\;
+      $r\gets min(r_i,r_j)$\;
+      $t\gets min(t_i,t_j)$\;
+      \If{$l>r$} {
+        $(l,b),(r,t)\gets (r,t),(l,b)$
+      }
+      $R\gets ((l,b),(r,t))$
+    }
+    \Return $R$
+  }
+  \Fn{\FArea{$R$}} {
+    $(l,b)\gets R.leftbottom$\;
+    $(r,t)\gets R.righttop$\;
+    \Return $(r-l)*(b-t)$
+  }
+  
+\end{algorithm}
+
+\Intuition
+For each rectangles, for all the rectangles that intersects with it,
+find the intersect subrectangle, use this new subrectangle to find the new overlap rectangles.
+Record the overlap count in the process, and finally select the maximum.
+
+\Proof
+Very simple. It is just a dynamic programming. When there is only one rectangle, gives 1, correct.
+
+For multiple rectangles share a common intersection area,
+if another rectangle intersects with this area,
+then it must share some common intersection area with all previous rectangles.
+
+Therefore, the subproblem is correct, so does the algorithm.
+
+\Complexity
+$O(n^3)$. Here, we can simply think the process as a tree.
+For example,
+
+\begin{tikzpicture}[level 1/.style={sibling distance=30mm},level 2/.style={sibling distance=10mm}]
+  \node{$\emptyset$}
+    child{node {$0$}
+      child{node{$1$}
+        child{node{$2$}
+          child{node{$3$}}
+        }
+        child{node{$3$}}
+      }
+      child{node{$2$}
+        child{node{$3$}}
+      }
+      child{node{$3$}}
+    }
+    child{node{$1$}
+      child{node{$2$}
+        child{node{$3$}}
+      }
+      child{node{$3$}}
+    }
+    child{node{$2$}
+      child{node{$3$}}
+    }
+    child{node{$3$}}
+  ;
+\end{tikzpicture}
+
+Consider total $n+1$ rectangles to make calculation easier.
+
+We can see that total nodes are 
+
+$n+1+n+(n-1)+\cdots+1+(n-1)+(n-2)+\cdots+1+\cdots1$
+
+$=n+1+1+2+\cdots+n+2+3+\cdots+n+\cdots+n$
+
+$=n+1+n^2+(n-1)^2+\cdots+2^+1=O(n^3)$
+
+Because it is the whole recurrence tree, 
+the iteration process is already calculated,
+so the total complexity is $O(n^3)$, polynomial.
+
+\textbf{Extra Credit:}
+
+\Algorithm 
+
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+
+  \SetKwFunction{FConstructSegment}{ConstructSegment}
+  \SetKwFunction{FBoxDepth}{BoxDepth}
+  \SetKwProg{Fn}{Function}{:}{}
+  \Fn{\FBoxDepth{$R$}} {
+    $(O,C)\gets$\FConstructSegment{$R$}
+    $L\gets {}$ as list\;
+    $maxOverlap\gets0$\;
+    $T\gets IntervalTree()$\;
+    the tree takes the max common overlap as a index of the nodes\;
+    duplicate intervals be treated as two different intervals\;
+    \For{$s\in O\cup C$} {
+      $L\gets L\cup s$
+    }
+    $L.sortby(lambda\;elem:\;lem[0][0])$\;
+    \For{$[(x,y_1),(x,y_2)]\in L$} {
+      \If{$[(x,y_1),(x,y_2)]\in O$} {
+        T.add($(y_1,y_2)$)\;
+        $c\gets$T.getMaxCommonOverlapCount($(y_1,y_2)$)\;
+        \If{$maxOverlap<c$} {
+          $maxOverlap\gets c$
+        }
+      } \Else {
+        T.remove($(y_1,y_2)$)
+      }
+    }
+  }
+  \Fn{\FConstructSegment{$R$}} {
+    $O\gets \{\}$ as set\;
+    $C\gets \{\}$ as set\;
+    \For{$i=1$ to $n$} {
+      $(l_i,b_i)\gets R_i.leftbottom$\;
+      $(r_i,t_i)\gets R_i.righttop$\;
+      $O\gets O\cup[(l_i,b_i),(l_i,t_i)]$\;
+      $C\gets C\cup[(r_i,b_i),(r_i,t_i)]$\;
+    }
+    \Return $O,C$
+  } 
+  
+\end{algorithm}
+
+\Intuition
+Use the sweep line method,
+sweep the line from left to right along the x axis,
+for each edge meets, if it is the left edge of the rectangle,
+then add it to the interval tree by its y coordinates,
+and check the current edges with it stored in the tree.
+If it is the right edge, just remove it from the tree.
+Track the max overlap during this process.
+
+\Proof
+Simply a sweep line.
+Consider the line on a left edge,
+we have already stored some edges in the tree,
+that means for these edges, the line is inside these rectangles.
+So, we only need to find the maximum common overlap of this edge in the tree,
+because at that point,
+maximum number of rectangles that the line sweeps overlap on each other.
+
+The line sweep until all the rectangles are scanned,
+so it is a global optimal
+
+\Complexity
+$O(n\log n)$. It is dominated by the sort and operation in the tree in the loop.
+The sort is $O(n\log n)$. In the tree, the operation is $O(\log n)$,
+and because it is a $O(n)$ loop, in total $O(n\log n)$.
+The ConstructSegment method is only an $O(n)$ loop.
+
+c) $\textsc{BoxDepth}\le_P\textsc{MaxClique}\land\textsc{BoxDepth}\in P$,
+cannot prove \textsc{MaxClique}$\in P$, so cannot prove $P=NP$
+
+To prove $\textsc{MaxClique}\in P$,
+we need to find a algorithm that $\textsc{MaxClique}\le_P\textsc{BoxDepth}$
+
+\item (10 points) \textbf{DNF-SAT}
+
+a) \Algorithm
+
+$C$ as the set of clauses
+
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+    
+  \SetKwFunction{FDNFSAT}{DNF-SAT}
+  \SetKwProg{Fn}{Function}{:}{}
+
+  \Fn{\FDNFSAT{$C$}} {
+    \For {$C_i\in C$} {
+      $S\gets\{\}$ as set\;
+      $no\_neg=True$\;
+      \For {$l_i\in C_i$} {
+        \If {$\neg l_i\in S$} {
+          $no\_neg=False$\;
+          \textbf{break for}\;
+        }
+      }
+      \If{no\_neg} {
+        \Return $True$
+      }
+    }
+    \Return $False$
+  }
+\end{algorithm}
+
+\Intuition 
+Check that if any clause can be true then return true, else false
+
+\Proof
+For DNF, because clauses are connected by or logic, so for any clause to be true,
+the whole proposition is true.
+
+Inside each clause, the literals are connected by and logic. 
+Because we just want to find a satisfiable situation,
+we can set the literals to be true or false.
+So, the only situation that a clause is false is that it can never be true,
+means there is $a\land\neg a$ case.
+
+\Complexity
+$O(n)$. Because the two loops iterates through the literals once which is $O(n)$,
+and the check in set takes $O(1)$.
+
+b) However, at least convert the CNF to DNF is a NP-Hard problem.
+$CNF-SAT\le_P DNF-SAT$ requires that $CNF\rightarrow DNF$ to be $P$
+which has not been proved. 
+Therefore, because the prepare for new input is not $P$,
+this reduction is not $P$, therefore cannot prove $P=NP$
+
+
+\item (30 points) \textbf{Magic Boxes} 
+
+a) \Algorithm
+
+Consider that $G$ has a Hamiltonian cycle, \textsc{BlackBox} return INF if there is no such a cycle.
+
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+    
+  \SetKwFunction{FBlackBox}{BlackBox}
+  \SetKwFunction{FHamiltoniaCycle}{HamiltoniaCycle}
+  \SetKwProg{Fn}{Function}{:}{}
+
+  \Fn{\FHamiltoniaCycle{$G$}} {
+    $(V,E)\gets G$\;
+    $min\_length$ = \FBlackBox{$G$}\;
+    \For{$e\in E$} {
+      $E\gets E\setminus e$\;
+      $length$ = \FBlackBox{$G$}\;
+      \If{length$>$min\_length} {
+        $E\gets E\cup e$
+      }
+    }
+    \Return $G$
+  }
+\end{algorithm}
+
+\Intuition
+Find the length of the shortest hamiltonian cycle of $G$ and record it as $min\_length$.
+Then, for each edge in $G$, remove it. If the new graph has shortest hamiltonian cycle larger than $ml$, add the edge back.
+After the first iteration, the graph is just the shortest cycle.
+
+\Proof
+Consider $m$ as the minimum length of hamiltonian cycle in the original $G$.
+
+In the algorithm, we try to remove each edge $e$ to see if the new length $m'>m$.
+
+Suppose $e$ not on any shortest hamiltonian cycle, remove it will not affect the cycle, safe to remove.
+
+Suppose $e$ on a shortest hamiltonian cycle. Remove it will break at least one such cycle.
+If there is no other such cycle in the new graph, the shortest length would definitely increase (if no any cycle, length is $\infty$),
+means delete it is not safe. 
+So, the final graph would contain at least one hamiltonian cycle and would be the shortest.
+
+Consider for $G'$ as the final graph $G$, which is not a single hamiltonian cycle.
+As described above, all the edges in this graph must be in some shortest hamiltonian cycle,
+and will increase the cycle length if deleted.
+That is not possible, because in this $G$, by definition of hamiltonian cycle,
+there must be at least one vertex that has degree larger than 2,
+and all edges to it are in some shortest hamiltonian cycle,
+but for one such cycle, it can only pass 2 of them, while all others are not used.
+So, delete them will not affect the shortest length.
+Also, because of this, those edges must have not been met by the algorithm,
+and can be deleted.
+As a result, it is contradictory to the assumption.
+
+So, the algorithm is correct.
+
+
+\Complexity
+Consider black box is $O(N^c)$, we have $O(mN^c)$, because the loop is $O(m)$ by itself,
+and in each iteration \textsc{BlackBox} is executed once,
+so finally $O(mN^c)$ still polynomial, as it is a polynomial multiples a polynomial.
+
+b) \Algorithm
+
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+    
+  \SetKwFunction{FBlackBox}{BlackBox}
+  \SetKwFunction{FMaxClique}{MaxClique}
+  \SetKwProg{Fn}{Function}{:}{}
+
+  \Fn{\FMaxClique{$G$}} {
+    $(V,E)\gets G$\;
+    $max\_size$ = \FBlackBox{$G$}\;
+    \For{$v\in V$} {
+      $V\gets V\setminus v$\;
+      $size$ = \FBlackBox{$G$}\;
+      \If{size$<$max\_size} {
+        $V\gets V\cup v$
+      }
+    }
+    \Return $G$
+  }
+\end{algorithm}
+
+\Intuition
+Find the maximum size of the complete subgraph of the original graph.
+For each vertex in $V$, remove it from it to see if that size decreases.
+If decreases, add that vertex back to $V$.
+
+\Proof
+Suppose that some vertex $v$ not in the largest complete subgraph,
+safe to remove clearly.
+
+Consider $v$ in some largest complete subgraph. 
+If there are multiple such subgraph, remove it is safe,
+because if one such subgraph exists, the max possible clique will not change.
+This will lead to the situation that only one largest complete subgraph left in the graph.
+
+Consider $v$ in the only largest complete subgraph.
+Remove it will reduce the max size, not safe as described in the algorithm.
+
+In this case, by iterating through all the vertices, 
+only one of the largest complete subgraph will be left there.
+So, this algorithm is correct.
+ 
+
+\Complexity
+Consider black box is $O(N^c)$, we have $O(nN^c)$, because the loop is $O(n)$ by itself,
+and in each iteration \textsc{BlackBox} is executed once,
+so finally $O(nN^c)$ still polynomial, as it is a polynomial multiples a polynomial.
+
+\item (20 points) \textbf{Student Preferences} 
+
+We can transfer this problem into a proposition problem.
+
+For each student, we know if that one of the five strong preferences is satisfied, the student is satisfied.
+Therefore, we can consider a student to be a clause in which the literals are connected by or logic.
+
+For example, student $A$ strongly prefers policy $a,b$ and reject $c$, the clause would be $a\lor b\lor\neg c$.
+If Jeff accepts some policy, it should be true in the proposition.
+
+In this case, we can construct the students into a list of $n$ clauses in each has most 5 literals.
+The goal is, find a combination of the true/false of each literals that make the number of the true clauses in the list to be the maximum.
+
+As described above, it is the exact simulation of the problem, so no more proof needed to make sure that this algorithm gives the correct answer.
+
+Define this problem as a MAX-5-SAT problem.
+
+It is clear that MAX-5-SAT can be reduced from MAX-2-SAT in at least polynomial time,
+mean that if we prove MAX-2-SAT is NP-hard, then MAX-5-SAT is NP-hard.
+
+Consider a 3SAT instance $\phi$ with $n$ clauses, 
+each clause $C_i=(x\lor y\lor z)\in\phi$.
+Add another new variable $w_i$ different from all other variables in $\phi$,
+and replace $C_i$ to 
+$$x,y,z,w_i (1)$$
+$$\neg x\lor \neg y,\neg x\lor\neg z,\neg y\lor \neg z (2)$$
+$$x\lor \neg w_i,y\lor \neg w_i,z\lor\neg w_i (3)$$ clauses.
+
+So, $\Phi'=\bigcap_{i=1}^n\{x_i, y_i, z_i , w_i,(\neg x_i\lor\neg y_i),(\neg x_i\lor\neg z_i),(\neg y_i\lor \neg z_i),(x_i\lor \neg w_i),(y_i\lor \neg w_i),(z_i\lor\neg w_i)\}$
+
+Here we have two theorems:
+\textbf{Theorem 1:} If some assignment satisfies $(x\lor y\lor z)$,
+then there is some $w_i$ that satisfies at most 7 of the 10 clauses.
+
+\textbf{Theorem 2:} If some assignment falsifies $(x\lor y\lor z)$,
+then there is some $w_i$ that satisfies at most 6 of the 10 clauses.
+
+\Proof 
+It is clear that the order of $x,y,z$ does not affect the result,
+So there are at most 4 cases.
+
+\textbf{Case 1:} $x=y=z=True,x\lor y\lor z=True$
+
+By set $w_i=True$, we have $(1),(2)$ be true, 7 in total.
+
+\textbf{Case 2:} $x=y=True,z=False,x\lor y\lor z=True$
+
+By set $w_i=True$,
+we have 3 in $(1)$, 2 in $(2)$ and 2 in $(3)$ are true, exactly 7 in total.
+
+\textbf{Case 3:} $x=True,y=z=False,x\lor y\lor z=True$.
+
+By set $w_i=False$,
+we have 1 in $(1)$ is true, and $(2),(3)$ are true, 7 in total.
+
+\textbf{Case 4:} $x=y=z=False,x\lor y\lor z=False$.
+
+If $w_i=False$, we have true for $(2),(3)$, total 6.
+
+Therefore, 3-SAT can be extended to MAX-2-SAT,
+as a satisfying assignment for $\Phi$ 
+can be extended to a satisfying assignment for $\Phi'$ 
+in which exactly 7 clauses in each groups are satisfied.
+
+If $\Phi$ is not satisfiable, then there are some $C_i={x,y,z}$ in $\Phi$
+that $x=y=z=False$, in which at most 6 clauses in $C_i'$ can be true.
+
+Therefore, 3-SAT is at least as complex as MAX-2-SAT, mean MAX-2-SAT is NP-hard,
+so we can prove that MAX-5-SAT is NP-hard, so no polynomial time algorithm
+can solve this problem.
+
+\item  (20 points) \textbf{Concatenations}
+
+Suppose $m\le n$, and $L$ is the length of the longest string in $A\cup B$.
+Consider that there exists such concatenation $u$ in $A,B$ that $l(u)$ has the minimum length among all possible concatenations.
+
+Claim that $l(u)\le n^2L^2$. It comes from:
+first extract all possible pairs $(a_i,b_j)$, the number of pairs is $mn\le n^2$.
+We align them together to create string $u_a=a_{i_1}a_{i_2}...a_{i_p},u_b=b_{j_1}b_{j_2}...b_{j_p}$
+which $u_a=u_b=u$. There are up to $L$ different ways to align them, consider there are elemental strings.
+Also, $l(a_i)\le L$, so the $l(u)\le n^2 * L * L=n^2L^2$
+
+Suppose that this claim is incorrect.
+As assumption, $l(u)>n^2L^2$. As described above, this length exceeds the maximum possible alignment combinations,
+Consider $p$ as the $p^{th}$ string concatenated in $u_a,u_b$.
+There must exist positions $p,p'$ that $p<p'$, and by deleting $p,p+1,...,p'-1$,
+we still have $u_a'=u_b'=u'$, and $l(u')<l(u)$, gives that $u$ is not the shortest common concatenation.
+Therefore, the assumption $l(u)>n^2L^2$ a false assumption,
+gives that $l(u)\le n^2L^2$, which is a polynomial.
+
+
+\item \textbf{(0 points).} How long did it take you to complete this assignment?
+
+\end{enumerate}
+
+
+\end{document}
